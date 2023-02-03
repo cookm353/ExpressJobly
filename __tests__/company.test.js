@@ -1,6 +1,6 @@
 "use strict";
 
-const db = require("../db.js");
+const db = require("../dist/db.js");
 const { BadRequestError, NotFoundError } = require("../dist/expressError");
 const Company = require("../dist/models/company");
 const {

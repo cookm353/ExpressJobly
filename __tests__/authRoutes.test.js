@@ -9,7 +9,7 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-} = require("../routes/_testCommon");
+} = require("../dist/routes/_testCommon");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
