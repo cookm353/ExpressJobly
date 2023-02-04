@@ -44,21 +44,87 @@ class Company {
     return company;
   }
 
+  /** 
+   * Creates WHERE clause to filter when finding all companies 
+   */
+
+  static buildFilter(filters): Object {
+    const keys = Object.keys(filters)
+    let sqlFilter = {
+      whereClause: "WHERE ",
+      vals: []
+    }
+    const {name, minEmployees, maxEmployees} = filters
+    // Only one filter
+    if (keys.length === 1) {
+      if (name) {
+        sqlFilter.whereClause += `handle LIKE $1`
+        sqlFilter.vals.push(name)
+      } else if (minEmployees) {
+        sqlFilter.whereClause += "num_employees < $1"
+        sqlFilter.vals.push(minEmployees)
+      } else {
+        sqlFilter.whereClause += "num_employees > $1"
+        sqlFilter.vals.push(maxEmployees)
+      }
+    // Two filters
+    } else if (keys.length === 2) {
+      if (name) {
+        sqlFilter.whereClause += `handle LIKE $1`
+        sqlFilter.vals.push(name)
+        if (minEmployees) {
+          sqlFilter.whereClause += ' and num_employees > $2'
+          sqlFilter.vals.push(minEmployees)
+        } else {
+          sqlFilter.whereClause += ' and num_employees < $2'
+          sqlFilter.vals.push(maxEmployees)
+        }
+      }
+      if (minEmployees && maxEmployees) {
+        sqlFilter.whereClause += 'num_employees BETWEEN $1 AND $2'
+        sqlFilter.vals.push(minEmployees, maxEmployees)
+      }
+    // All three
+    } else if (keys.length === 3) {
+      sqlFilter.whereClause += 'handle = $1 AND num_employees BETWEEN $2 AND $3'
+      sqlFilter.vals.push(name, minEmployees, maxEmployees)
+    }
+    return sqlFilter
+  }
+
   /** Find all companies.
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
-    const companiesRes = await db.query(
-          `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
-    return companiesRes.rows;
+  static async findAll(filters) {
+    let companiesResp: String
+    const {name, minEmployees, maxEmployees} = filters
+    const keys: Array<String> = Object.keys(filters)
+    if (keys.length >= 1) {
+      let where = 'WHERE '
+      const filter = this.buildFilter(filters)
+      companiesResp = await db.query(
+        `SELECT handle,
+          name,
+          description,
+          num_employees AS "numEmployees",
+          logo_url AS "logoUrl"
+         FROM companies
+         ${filter['whereClause']}
+         ORDER BY name`,
+         filter['vals'])
+    } else {
+      companiesResp = await db.query(
+      `SELECT handle,
+        name,
+        description,
+        num_employees AS "numEmployees",
+        logo_url AS "logoUrl"
+      FROM companies
+      ORDER BY name`);
+    }
+    return companiesResp.rows;
   }
 
   /** Given a company handle, return data about company.
@@ -141,6 +207,5 @@ class Company {
     if (!company) throw new NotFoundError(`No company: ${handle}`);
   }
 }
-
 
 module.exports = Company;
