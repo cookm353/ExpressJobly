@@ -30,19 +30,19 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
         return next(err);
     }
 });
-/** GET /  =>
- *   { companies: [ { handle, name, description, numEmployees, logoUrl }, ...] }
- *
- * Can filter on provided search filters:
- * - minEmployees
- * - maxEmployees
- * - nameLike (will find case-insensitive, partial matches)
- *
- * Authorization required: none
- */
 router.get("/", async function (req, res, next) {
     try {
-        const companies = await Company.findAll();
+        let filters = {};
+        if (req.body.name)
+            filters['name'] = `%${req.body.name.toLowerCase()}%`;
+        if (req.body.minEmployees)
+            filters['minEmployees'] = req.body.minEmployees;
+        if (req.body.maxEmployees)
+            filters['maxEmployees'] = req.body.maxEmployees;
+        if (filters['minEmployees'] > filters['maxEmployees']) {
+            throw new ExpressError("minEmployees must be smaller than maxEmployees", 400);
+        }
+        const companies = await Company.findAll(filters);
         return res.json({ companies });
     }
     catch (err) {
