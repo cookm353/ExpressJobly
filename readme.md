@@ -66,3 +66,7 @@ Route which allows admins to create new users, including new admins.  T
 ### Company Endpoints
 
 #### `GET /companies/`
+
+## Takeaways
+
+- Always work on a separate branch when implementing a new feature, even if you're the only one working on a project
