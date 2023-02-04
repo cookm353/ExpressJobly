@@ -106,6 +106,16 @@ describe("GET /companies", function () {
         .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(500);
   });
+
+  test("Test filtering by name", async function() {
+    const resp = await request(app)
+      .get('/companies')
+      // .send({name: "anderson"})
+
+    expect(resp.statusCode).toEqual(200)
+    expect(resp.body).toEqual([])
+    // expect(resp.body.companies[0]).toHaveProperty("numEmployees", 245)
+  })
 });
 
 /************************************** GET /companies/:handle */
