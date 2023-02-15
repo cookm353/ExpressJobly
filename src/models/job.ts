@@ -26,7 +26,7 @@ class Job {
 			[company_handle]
 		)
 
-		if (companyCheck.rows[0]) {
+		if (!companyCheck.rows[0]) {
 			throw new NotFoundError(`Company not found: ${company_handle}`)
 		}
 		
@@ -34,7 +34,8 @@ class Job {
 			`INSERT INTO jobs
 			(title, salary, equity, company_handle)
 			VALUES ($1, $2, $3, $4)
-			RETURNING title, salary, equity, company_handle`
+			RETURNING title, salary, equity, company_handle`,
+			[title, salary, equity, company_handle]
 		)
 
 		const job = jobsResp.rows[0]
@@ -68,7 +69,7 @@ class Job {
 	 */
     static async findAll() {
 		const jobsResp = await db.query(
-				`SELECT title, salary, equity, company_handle
+				`SELECT id, title, salary, equity, company_handle
 				FROM jobs`
 			)
 
@@ -96,13 +97,13 @@ class Job {
 		const handleVarIdx = '$' + (values.length + 1)
 
 		const querySql = `
-			UPDATE companies
+			UPDATE jobs
 			SET ${setCols}
-			WHERE handle = ${handleVarIdx}
+			WHERE id = ${handleVarIdx}
 			RETURNING title,
 				salary,
 				equity,
-				company_handle AS companyHandle
+				company_handle
 		`
 		
 		const resp = await db.query(querySql, [...values, id])
@@ -125,7 +126,7 @@ class Job {
 			RETURNING id`,
 			[id]
 		)
-		const job = resp.row[0]
+		const job = resp.rows[0]
 
 		if (!job) throw new NotFoundError(`No job: ${id}`)
     }

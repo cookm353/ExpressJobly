@@ -18,13 +18,13 @@ class Job {
         const companyCheck = await db.query(`SELECT handle
 			FROM companies
 			WHERE handle = $1`, [company_handle]);
-        if (companyCheck.rows[0]) {
+        if (!companyCheck.rows[0]) {
             throw new NotFoundError(`Company not found: ${company_handle}`);
         }
         const jobsResp = await db.query(`INSERT INTO jobs
 			(title, salary, equity, company_handle)
 			VALUES ($1, $2, $3, $4)
-			RETURNING title, salary, equity, company_handle`);
+			RETURNING title, salary, equity, company_handle`, [title, salary, equity, company_handle]);
         const job = jobsResp.rows[0];
         return job;
     }
@@ -48,7 +48,7 @@ class Job {
      * Returns [{ title, salary, equity, company_handle }, ...]
      */
     static async findAll() {
-        const jobsResp = await db.query(`SELECT title, salary, equity, company_handle
+        const jobsResp = await db.query(`SELECT id, title, salary, equity, company_handle
 				FROM jobs`);
         return jobsResp.rows;
     }
@@ -61,7 +61,27 @@ class Job {
      * Throws NotFound Error if not found
      */
     static async update(id, data) {
-        const resp = await db.query();
+        const { setCols, values } = sqlForPartialUpdate(data, {
+            title: 'title',
+            salary: 'salary',
+            equity: 'equity',
+            company_handle: 'company_handle'
+        });
+        const handleVarIdx = '$' + (values.length + 1);
+        const querySql = `
+			UPDATE jobs
+			SET ${setCols}
+			WHERE id = ${handleVarIdx}
+			RETURNING title,
+				salary,
+				equity,
+				company_handle
+		`;
+        const resp = await db.query(querySql, [...values, id]);
+        const job = resp.rows[0];
+        if (!job)
+            throw new NotFoundError(`No job: ${id}`);
+        return job;
     }
     /** Delete specified job from DB; returns undefined
      *
@@ -71,7 +91,7 @@ class Job {
         const resp = await db.query(`DELETE FROM jobs
 			WHERE id = $1
 			RETURNING id`, [id]);
-        const job = resp.row[0];
+        const job = resp.rows[0];
         if (!job)
             throw new NotFoundError(`No job: ${id}`);
     }
