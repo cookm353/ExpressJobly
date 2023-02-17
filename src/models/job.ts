@@ -77,11 +77,13 @@ class Job {
 			vals: []
 		}
 		const {title, minSalary, hasEquity} = filters
+		let jobTitle
+		if (title) jobTitle = `%${title.toLowerCase()}%`
 		// One filter
 		if (keys.length === 1) {
 			if (title) {
-				sqlFilter.whereClause += 'title LIKE $1'
-				sqlFilter.vals.push(title)
+				sqlFilter.whereClause += 'LOWER(title) LIKE $1'
+				sqlFilter.vals.push(jobTitle)
 			} else if (minSalary) {
 				sqlFilter.whereClause += 'salary >= $1'
 				sqlFilter.vals.push(minSalary)
@@ -89,10 +91,11 @@ class Job {
 				sqlFilter.whereClause += 'equity > $1'
 				sqlFilter.vals.push(0)
 			}
+		// Two filters
 		} else if (keys.length === 2) {
 			if (title) {
-				sqlFilter.whereClause += 'title LIKE $1'
-				sqlFilter.vals.push(title)
+				sqlFilter.whereClause += 'LOWER(title) LIKE $1'
+				sqlFilter.vals.push(jobTitle)
 				if (minSalary) {
 					sqlFilter.whereClause += ' AND salary >= $2'
 					sqlFilter.vals.push(minSalary)
@@ -101,16 +104,21 @@ class Job {
 					sqlFilter.vals.push(0)
 				}
 			} else if (minSalary) {
-				sqlFilter.whereClause += 'title LIKE $1 AND salary >= $2 AND equity > $3'
-				sqlFilter.vals.push(title, minSalary, 0)
+				sqlFilter.whereClause += 'salary >= $2 AND equity > $3'
+				sqlFilter.vals.push(minSalary, 0)
 			}
+		// Three filters
+		} else {
+			sqlFilter.whereClause += 'LOWER(title) LIKE $1 AND salary >= $2 AND equity > $3'
+			sqlFilter.vals.push(jobTitle, minSalary, 0)
 		}
+
+		return sqlFilter
 	}
 
     static async findAll(filters) {
-		let jobsResp: String
-		
 		const keys: Array<String> = Object.keys(filters)
+		let jobsResp
 
 		if (keys.length === 0) {
 			jobsResp = await db.query(
