@@ -16,7 +16,8 @@ To run the tests:
 
 #### **`POST /auth/token`**
 
-Login route which accepts a username and password and returns a JWT which can be used for other requests.
+- Login route which accepts a username and password and returns a JWT which can be used for other requests
+- Authorization level required: none
 
 ```JavaScript
 { username, password} => { token }
@@ -30,7 +31,8 @@ Login route which accepts a username and password and returns a JWT which can be
 
 #### **`POST /auth/register`**
 
-Registration route which accepts a username, password, first name, last name, and email address, and returns a token which can be used for other requests.
+- Registration route which accepts a username, password, first name, last name, and email address, and returns a token which can be used for other requests
+- Authorization level required: none
 
 ```JavaScript
 { username, password, firstName, lastName, email } => { token }
@@ -49,19 +51,90 @@ Registration route which accepts a username, password, first name, last name, an
 
 #### **`POST /users/`**
 
-Route which allows admins to create new users, including new admins.  T
+- Route which allows admins to create new users, including new admins
+- Authorization level required: administrator
 
 ```JavaScript
-{ user } => { user, token }
+{ user } => { token }
 
-// Where {user} = 
+// Where {user} = { username, password, firstName, lastName, email }
 ```
 
 | Name | Description | Type |
 | - | - | - |
-
+| username | User's username | string |
+| password | Password associated with username | string |
+| firstName | User's first name | string |
+| lastName | User's last name | string |
+| email | User's email address | string |
+| token | JSON web token | string |
 
 #### `GET /users/`
+
+- Route which returns information for all users
+- Authorization level required: administrator
+
+```JavaScript
+{ users: [ {username, firstName, lastName, email, isAdmin }, ... ] }
+```
+
+| Name | Description | Type |
+| - | - | - |
+| username | User's username | string |
+| password | Password associated with username | string |
+| firstName | User's first name | string |
+| lastName | User's last name | string |
+| email | User's email address | string |
+| isAdmin | If user is an admin | boolean |
+
+#### `GET /users/[username]`
+
+- Route which returns information for a given user
+- Authorization level required: administrator or user being looked up
+
+```JavaScript
+{ user: { username, firstName, lastName, isAdmin } }
+```
+
+| Name | Description | Type |
+| - | - | - |
+| username | User's username | string |
+| password | Password associated with username | string |
+| firstName | User's first name | string |
+| lastName | User's last name | string |
+| email | User's email address | string |
+| isAdmin | If user is an admin | boolean |
+
+#### `PATCH /users/[username]`
+
+- Route which allows user information to be updated
+- Allows for updating user's first name, last name, password, and email
+- Authorization level required: administrator or user being updated
+
+```JavaScript
+{ firstName?, lastName?, password?, email? } => { user: { username, firstName, lastName, isAdmin } }
+```
+
+| Name | Description | Type |
+| - | - | - |
+| username | User's username | string |
+| password | Password associated with username | string |
+| firstName | User's first name | string |
+| lastName | User's last name | string |
+| email | User's email address | string |
+
+#### `DELETE /users/[username]`
+
+- Router which allows users to be deleted
+- Authorization level required: administrator or user being updated
+
+```JavaScript
+=> { deleted: username}
+```
+
+| Name | Description | Type |
+| - | - | - |
+| username | User's username | string |
 
 ### Company Endpoints
 
