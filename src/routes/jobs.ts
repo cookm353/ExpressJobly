@@ -56,10 +56,9 @@ interface filters {
 router.get('/', async(req, resp, next) => {
     try {
         let filters: filters = {}
-        if (req.body.title) filters['title'] = req.body.name
+        if (req.body.title) filters['title'] = req.body.title
         if (req.body.minSalary) filters['minSalary'] = req.body.minSalary
         if (req.body.hasEquity) filters['hasEquity'] = true
-        
         const jobs = await Job.findAll(filters)
         return resp.json({ jobs })
     } catch (err) {

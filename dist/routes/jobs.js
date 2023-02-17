@@ -33,7 +33,7 @@ router.get('/', async (req, resp, next) => {
     try {
         let filters = {};
         if (req.body.title)
-            filters['title'] = req.body.name;
+            filters['title'] = req.body.title;
         if (req.body.minSalary)
             filters['minSalary'] = req.body.minSalary;
         if (req.body.hasEquity)
