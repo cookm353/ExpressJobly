@@ -87,8 +87,8 @@ class Job {
 			} else if (minSalary) {
 				sqlFilter.whereClause += 'salary >= $1'
 				sqlFilter.vals.push(minSalary)
-			} else if (hasEquity) {
-				sqlFilter.whereClause += 'equity > $1'
+			} else if (hasEquity === true) {
+				sqlFilter.whereClause += 'CAST(equity AS DOUBLE PRECISION) > $1'
 				sqlFilter.vals.push(0)
 			}
 		// Two filters
@@ -100,17 +100,17 @@ class Job {
 					sqlFilter.whereClause += ' AND salary >= $2'
 					sqlFilter.vals.push(minSalary)
 				} else {
-					sqlFilter.whereClause += ' AND equity > $2'
+					sqlFilter.whereClause += ' AND CAST(equity AS DOUBLE PRECISION) > $2'
 					sqlFilter.vals.push(0)
 				}
 			} else if (minSalary) {
-				sqlFilter.whereClause += 'salary >= $2 AND equity > $3'
-				sqlFilter.vals.push(minSalary, 0)
+				sqlFilter.whereClause += 'salary >= $1 AND CAST(equity AS DOUBLE PRECISION) > $2'
+				sqlFilter.vals.push(minSalary, 0.0)
 			}
 		// Three filters
 		} else {
-			sqlFilter.whereClause += 'LOWER(title) LIKE $1 AND salary >= $2 AND equity > $3'
-			sqlFilter.vals.push(jobTitle, minSalary, 0)
+			sqlFilter.whereClause += 'LOWER(title) LIKE $1 AND salary >= $2 AND CAST(equity AS DOUBLE PRECISION) > $3'
+			sqlFilter.vals.push(jobTitle, minSalary, 0.0)
 		}
 
 		return sqlFilter
@@ -134,7 +134,6 @@ class Job {
 				filter['vals']
 			)
 		}
-
 
 		return jobsResp.rows
     }
