@@ -105,6 +105,58 @@ describe('POST /jobs', () => {
 /* GET /jobs */
 
 describe('GET /jobs', () => {
+    test('Can filter on title', async () => {
+        const resp = await request(app).get('/jobs')
+            .send({'title': 'j1'})
+        expect(resp.statusCode).toBe(200)
+        expect(resp.body).toEqual({jobs: [
+            {
+                id: 1,
+                title: 'j1',
+                salary: 90000,
+                equity: "0.6",
+                company_handle: 'c1'
+            }
+        ]})
+    })
+
+    test("Can filter on salary", async () => {
+        const resp = await request(app).get('/jobs')
+            .send({'minSalary': '95000'})
+        expect(resp.statusCode).toBe(200)
+        expect(resp.body).toEqual({jobs: [
+            {
+                id: 3,
+                title: 'j3',
+                salary: 100000,
+                equity: "0.9",
+                company_handle: 'c3'
+            }
+        ]})
+    })
+
+    test('Can filter on equity', async () => {
+        const resp = await request(app).get('/jobs')
+            .send({equity: true})
+        expect(resp.statusCode).toBe(200)
+        expect(resp.body).toEqual({jobs: [
+            {
+                id: 1,
+                title: 'j1',
+                salary: 90000,
+                equity: "0.6",
+                company_handle: 'c1'
+            },
+            {
+                id: 3,
+                title: 'j3',
+                salary: 100000,
+                equity: "0.9",
+                company_handle: 'c3'
+            }
+        ]})
+    })
+    
     test('Works', async () => {
         const resp = await request(app).get('/jobs')
         expect(resp.statusCode).toBe(200)
