@@ -47,9 +47,20 @@ router.post('/', ensureIsAdmin, async (req, resp, next) => {
  * Auth required: none
  */
 
+interface filters {
+    title?: string,
+    minSalary?: number,
+    hasEquity?: boolean
+}
+
 router.get('/', async(req, resp, next) => {
     try {
-        const jobs = await Job.findAll()
+        let filters: filters = {}
+        if (req.body.title) filters['title'] = req.body.name
+        if (req.body.minSalary) filters['minSalary'] = req.body.minSalary
+        if (req.body.hasEquity) filters['hasEquity'] = true
+        
+        const jobs = await Job.findAll(filters)
         return resp.json({ jobs })
     } catch (err) {
         return next(err)

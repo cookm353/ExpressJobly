@@ -65,13 +65,68 @@ class Job {
 
 	/** Find all jobs
 	 * 
+	 * Can filter on title, minSalary, and whether or not it has equity
+	 * 
 	 * Returns [{ title, salary, equity, company_handle }, ...]
 	 */
-    static async findAll() {
-		const jobsResp = await db.query(
+
+	static buildFilter(filters): Object {
+		const keys = Object.keys(filters)
+		let sqlFilter = {
+			whereClause: 'WHERE ',
+			vals: []
+		}
+		const {title, minSalary, hasEquity} = filters
+		// One filter
+		if (keys.length === 1) {
+			if (title) {
+				sqlFilter.whereClause += 'title LIKE $1'
+				sqlFilter.vals.push(title)
+			} else if (minSalary) {
+				sqlFilter.whereClause += 'salary >= $1'
+				sqlFilter.vals.push(minSalary)
+			} else if (hasEquity) {
+				sqlFilter.whereClause += 'equity > $1'
+				sqlFilter.vals.push(0)
+			}
+		} else if (keys.length === 2) {
+			if (title) {
+				sqlFilter.whereClause += 'title LIKE $1'
+				sqlFilter.vals.push(title)
+				if (minSalary) {
+					sqlFilter.whereClause += ' AND salary >= $2'
+					sqlFilter.vals.push(minSalary)
+				} else {
+					sqlFilter.whereClause += ' AND equity > $2'
+					sqlFilter.vals.push(0)
+				}
+			} else if (minSalary) {
+				sqlFilter.whereClause += 'title LIKE $1 AND salary >= $2 AND equity > $3'
+				sqlFilter.vals.push(title, minSalary, 0)
+			}
+		}
+	}
+
+    static async findAll(filters) {
+		let jobsResp: String
+		
+		const keys: Array<String> = Object.keys(filters)
+
+		if (keys.length === 0) {
+			jobsResp = await db.query(
 				`SELECT id, title, salary, equity, company_handle
 				FROM jobs`
 			)
+		} else if (keys.length >= 1) {
+			const filter = this.buildFilter(filters)
+			jobsResp = await db.query(
+				`SELECT id, title, salary, equity, company_handle
+				FROM jobs
+				${filter['whereClause']}`,
+				filter['vals']
+			)
+		}
+
 
 		return jobsResp.rows
     }
