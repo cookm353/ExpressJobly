@@ -99,10 +99,9 @@ class Company {
 
   static async findAll(filters) {
     let companiesResp: String
-    const {name, minEmployees, maxEmployees} = filters
     const keys: Array<String> = Object.keys(filters)
+    
     if (keys.length >= 1) {
-      let where = 'WHERE '
       const filter = this.buildFilter(filters)
       companiesResp = await db.query(
         `SELECT handle,

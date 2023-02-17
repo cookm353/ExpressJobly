@@ -88,10 +88,8 @@ class Company {
      * */
     static async findAll(filters) {
         let companiesResp;
-        const { name, minEmployees, maxEmployees } = filters;
         const keys = Object.keys(filters);
         if (keys.length >= 1) {
-            let where = 'WHERE ';
             const filter = this.buildFilter(filters);
             companiesResp = await db.query(`SELECT handle,
           name,
