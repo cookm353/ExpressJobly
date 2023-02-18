@@ -46,8 +46,7 @@ router.post("/", ensureIsAdmin, async function (req, res, next) {
 router.post('/:username/jobs/:id', ensureIsAdminOrCorrectUser, async (req, resp, next) => {
     try {
         const { username, id } = req.params;
-        console.log(username);
-        console.log(id);
+        await User.apply(username, id);
         return resp.json({ applied: id });
     }
     catch (err) {
