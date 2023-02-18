@@ -13,6 +13,7 @@ const {
   commonAfterAll,
   u1Token,
 } = require("../dist/routes/_testCommon.js");
+const { UnauthorizedError } = require("../dist/expressError.js");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -109,6 +110,38 @@ describe("POST /users", function () {
     expect(resp.statusCode).toEqual(400);
   });
 });
+
+/** POST /users/[username]/jobs/[id] */
+
+describe('POST /users/:username/jobs/:id', () => {
+  test('Throws error w/o a token', async () => {
+    try {
+      await request(app)
+        .post('/users/u1/jobs/1')
+    } catch (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy()
+    }
+  })
+
+  test('Throws error w/ wrong token', async () => {
+    try {
+      await request(app)
+        .post('/users/u2/jobs/1')
+        .set("authorization", `Bearer ${u1Token}`)
+    } catch (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy()
+    }
+  })
+
+  test('Works', async () => {
+    const resp = await request(app)
+      .post('/users/u1/jobs/1')
+      .set("authorization", `${u1Token}`)
+
+    expect(resp.statusCode).toBe(201)
+    expect(resp.body).toEqual({applied: 1})
+  })
+})
 
 /************************************** GET /users */
 
