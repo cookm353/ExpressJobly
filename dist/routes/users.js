@@ -35,6 +35,25 @@ router.post("/", ensureIsAdmin, async function (req, res, next) {
         return next(err);
     }
 });
+/** POST /[username]/jobs/[id] => { applied: jobId}
+ *
+ * Lets user apply for the specified job.
+ *
+ * This returns a message indicating the user has applied and the job ID
+ *
+ * Auth required: correct user or admin
+*/
+router.post('/:username/jobs/:id', ensureIsAdminOrCorrectUser, async (req, resp, next) => {
+    try {
+        const { username, id } = req.params;
+        console.log(username);
+        console.log(id);
+        return resp.json({ applied: id });
+    }
+    catch (err) {
+        return next(err);
+    }
+});
 /** GET / => { users: [ {username, firstName, lastName, email, isAdmin }, ... ] }
  *
  * Returns list of all users.
