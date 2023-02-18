@@ -205,9 +205,9 @@ class User {
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
 
-  /** Apply to a given job, returns { applied: jobId } */
+  /** Apply to a given job, returns undefined */
 
-  static async apply(username, jobId) {
+  static async apply(username: string, jobId: number) {
     const userCheckResult = await db.query(
       `SELECT username
       FROM users
@@ -219,7 +219,7 @@ class User {
 
     const jobCheckResult = await db.query(
       `SELECT id
-      FROM users
+      FROM jobs
       WHERE id = $1`,
       [jobId]
     )
@@ -236,8 +236,6 @@ class User {
     const application = result.rows[0]
 
     if (!application) throw new NotFoundError(`No application: ${username + jobId}`)
-
-    return {applied: jobId}
   }
 }
 
