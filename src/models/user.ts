@@ -207,7 +207,7 @@ class User {
 
   /** Apply to a given job, returns undefined */
 
-  static async apply(username: string, jobId: number) {
+  static async apply(username: string, jobId: number | string) {
     const userCheckResult = await db.query(
       `SELECT username
       FROM users
