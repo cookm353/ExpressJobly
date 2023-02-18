@@ -143,13 +143,35 @@ class User {
     }
     /** Delete given user from database; returns undefined. */
     static async remove(username) {
-        let result = await db.query(`DELETE
+        const result = await db.query(`DELETE
            FROM users
            WHERE username = $1
            RETURNING username`, [username]);
         const user = result.rows[0];
         if (!user)
             throw new NotFoundError(`No user: ${username}`);
+    }
+    /** Apply to a given job, returns { applied: jobId } */
+    static async apply(username, jobId) {
+        const userCheckResult = await db.query(`SELECT username
+      FROM users
+      WHERE username = $1`, [username]);
+        const user = userCheckResult.rows[0];
+        if (!user)
+            throw new NotFoundError(`No user: ${username}`);
+        const jobCheckResult = await db.query(`SELECT id
+      FROM users
+      WHERE id = $1`, [jobId]);
+        const job = jobCheckResult.rows[0];
+        if (!job)
+            throw new NotFoundError(`No job id: ${jobId}`);
+        const result = await db.query(`INSERT INTO applications (username, job_id)
+      VALUES ($1, $2)
+      RETURNING job_id AS jobId`, [username, jobId]);
+        const application = result.rows[0];
+        if (!application)
+            throw new NotFoundError(`No application: ${username + jobId}`);
+        return { applied: jobId };
     }
 }
 module.exports = User;
