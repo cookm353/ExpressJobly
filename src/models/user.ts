@@ -112,7 +112,14 @@ class User {
            ORDER BY username`,
     );
 
-    return result.rows;
+    const users = result.rows
+    const userList = users.map(user => user.username)
+
+    const usersJobs = userList.forEach(user => {
+
+    })
+
+    return users;
   }
 
   /** Given a username, return data about user.
@@ -125,21 +132,41 @@ class User {
 
   static async get(username) {
     const userRes = await db.query(
-          `SELECT username,
+          `SELECT u.username,
                   first_name AS "firstName",
                   last_name AS "lastName",
                   email,
-                  is_admin AS "isAdmin"
-           FROM users
-           WHERE username = $1`,
+                  is_admin AS "isAdmin",
+                  job_id
+           FROM users AS u
+           JOIN applications AS a
+           ON u.username = a.username
+           WHERE u.username = $1`,
         [username],
     );
 
+    const appRes = await db.query(
+      `SELECT job_id
+      FROM applications
+      WHERE username = $1`,
+      [username]
+    )
+
+    const jobs = appRes.rows.map(app => app.job_id)
     const user = userRes.rows[0];
+
+    const userDeets = {
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        jobs
+      }
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
 
-    return user;
+    return userDeets;
   }
 
   /** Update user data with `data`.
