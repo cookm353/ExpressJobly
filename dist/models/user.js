@@ -66,6 +66,26 @@ class User {
         const user = result.rows[0];
         return user;
     }
+    /** Adds jobs user has applied for to object
+     *
+     * returns { username, first_name, last_name, email, is_admin, jobs: [ ... ] }
+     */
+    static async buildUserObject(user) {
+        const { username, firstName, lastName, email, isAdmin } = user;
+        const jobsResult = await db.query(`SELECT job_id AS "jobId"
+      FROM applications
+      WHERE username = $1`, [username]);
+        const jobs = jobsResult.rows.map(row => row.jobId);
+        const newUserResult = {
+            username,
+            firstName,
+            lastName,
+            email,
+            isAdmin,
+            jobs
+        };
+        return newUserResult;
+    }
     /** Find all users.
      *
      * Returns [{ username, first_name, last_name, email, is_admin }, ...]
@@ -78,11 +98,13 @@ class User {
                   is_admin AS "isAdmin"
            FROM users
            ORDER BY username`);
-        const users = result.rows;
-        const userList = users.map(user => user.username);
-        const usersJobs = userList.forEach(user => {
-        });
-        return users;
+        let users = result.rows;
+        const userDetailList = [];
+        for (let user of users) {
+            const deets = await User.buildUserObject(user);
+            userDetailList.push(deets);
+        }
+        return userDetailList;
     }
     /** Given a username, return data about user.
      *
