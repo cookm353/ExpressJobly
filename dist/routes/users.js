@@ -47,7 +47,7 @@ router.post('/:username/jobs/:id', ensureIsAdminOrCorrectUser, async (req, resp,
     try {
         const { username, id } = req.params;
         await User.apply(username, id);
-        return resp.json({ applied: id });
+        return resp.status(201).json({ applied: id });
     }
     catch (err) {
         return next(err);
@@ -76,8 +76,8 @@ router.get("/", ensureIsAdmin, async function (req, res, next) {
  **/
 router.get("/:username", ensureIsAdminOrCorrectUser, async function (req, res, next) {
     try {
-        const user = await User.get(req.params.username);
-        return res.json({ user });
+        const [user, jobs] = await User.get(req.params.username);
+        return res.json({ user, jobs: jobs });
     }
     catch (err) {
         return next(err);
