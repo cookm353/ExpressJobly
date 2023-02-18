@@ -228,3 +228,37 @@ describe("remove", function () {
     }
   });
 });
+
+/** apply() */
+
+describe('Apply()', () => {
+  test('Throws error w/ invalid username', async () => {
+    try {
+      await User.apply('u3', 1)
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy()
+    }
+  })
+
+  test('Throws error w/ invalid job id', async () => {
+    try {
+      await User.apply('u3', 10)
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy()
+    }
+  })
+
+  test('Works', async () => {
+    await User.apply('u1', 1)
+    const resp = await db.query(
+      `SELECT *
+      FROM applications
+      WHERE username = 'u1'`
+    )
+
+    expect(resp.rows[0]).toEqual({
+      username: 'u1',
+      job_id: 1
+    })
+  })
+})
