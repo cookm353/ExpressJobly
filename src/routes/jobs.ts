@@ -76,8 +76,7 @@ router.get('/', async(req, resp, next) => {
 router.get('/:id', async(req, resp, next) => {
     try {
         const { id } = req.params
-        console.log(id)
-
+        
         const job = await Job.get(id)
         return resp.json({ job })
     } catch (err) {
