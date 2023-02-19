@@ -76,7 +76,7 @@ router.get('/', async(req, resp, next) => {
 router.get('/:id', async(req, resp, next) => {
     try {
         const { id } = req.params
-        
+
         const job = await Job.get(id)
         return resp.json({ job })
     } catch (err) {
@@ -117,7 +117,10 @@ router.patch('/:id', ensureIsAdmin, async (req, resp, next) => {
 
 router.delete('/:id', ensureIsAdmin, async (req, resp, next) => {
     try {
-        
+        const { id } = req.params
+        await Job.remove(id)
+
+        return { deleted: id }
     } catch (err) {
         return next(err)
     }

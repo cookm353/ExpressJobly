@@ -91,6 +91,9 @@ router.patch('/:id', ensureIsAdmin, async (req, resp, next) => {
 */
 router.delete('/:id', ensureIsAdmin, async (req, resp, next) => {
     try {
+        const { id } = req.params;
+        await Job.remove(id);
+        return { deleted: id };
     }
     catch (err) {
         return next(err);
